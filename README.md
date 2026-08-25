@@ -1,4 +1,4 @@
-# Event Master 1.2.7
+# Event Master 1.2.8
 
 Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mod.
 
@@ -27,6 +27,8 @@ Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mo
 - L'écran montre séparément l'inventaire principal, la barre rapide, les armures et la main secondaire du joueur ciblé, ainsi que l'inventaire de l'administrateur.
 - Les couleurs et séparateurs de l'écran distinguent clairement l'inventaire ciblé et celui de l'administrateur.
 - La vitesse globale accélère aussi les ticks naturels du monde, comme la pousse et la propagation du feu.
+- `/event stop` arrête tous les événements, `/event status` affiche leur état, `/event history` affiche l'historique, et `/event reset` réinitialise tout.
+- Les démarrages, échanges et fins importantes utilisent des titres et des sons vanilla.
 - `Bordure évolutive` utilise la bordure vanilla : jour 1 = 1x1 bloc, jour 2 = 2x2, jour 3 = 4x4, puis la taille double chaque jour.
 - La bordure est centrée sur la position de l'opérateur qui la démarre et son rendu est géré par Minecraft, sans remplissage massif de blocs.
 - Les options restent actives jusqu'a l'arret du serveur.
@@ -36,7 +38,7 @@ Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mo
 1. Installer Java 21 et Gradle 8.8 ou plus recent.
 2. Ouvrir ce dossier dans un terminal.
 3. Executer `gradle build`.
-4. Copier `build/libs/eventcontrol-1.2.7.jar` dans le dossier `mods` du serveur NeoForge 1.21.1.
+4. Copier `build/libs/eventcontrol-1.2.8.jar` dans le dossier `mods` du serveur NeoForge 1.21.1.
 
 Le client se connecte avec Minecraft vanilla compatible avec le serveur ; aucun fichier du mod n'est requis cote client.
 "# eventcontrol" 
