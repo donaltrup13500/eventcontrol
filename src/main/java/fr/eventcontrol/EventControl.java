@@ -88,6 +88,7 @@ public class EventControl {
     private static int randomEffectsIntervalTicks = 20 * 30;
     private static int randomEffectsTicks;
     private static UUID randomEffectsTarget;
+    private static MobEffectInstance activeRandomEffect;
     private static final ServerBossEvent randomEffectsBossBar = new ServerBossEvent(
         Component.literal("Effets aléatoires"), ServerBossEvent.BossBarColor.BLUE, ServerBossEvent.BossBarOverlay.PROGRESS);
     private static int gameSpeedMultiplier = 1;
@@ -226,8 +227,11 @@ public class EventControl {
             new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, randomEffectsIntervalTicks, 0),
             new MobEffectInstance(MobEffects.GLOWING, randomEffectsIntervalTicks, 0)
         };
-            target.removeAllEffects();
-            target.addEffect(effects[ThreadLocalRandom.current().nextInt(effects.length)]);
+            if (activeRandomEffect != null) {
+                target.removeEffect(activeRandomEffect.getEffect());
+            }
+            activeRandomEffect = effects[ThreadLocalRandom.current().nextInt(effects.length)];
+            target.addEffect(activeRandomEffect);
     }
 
     private static void tickDeathSwap(MinecraftServer server, List<ServerPlayer> players) {
@@ -712,12 +716,21 @@ public class EventControl {
 
     public static void stopRandomEffects(MinecraftServer server) {
         randomEffects = false;
+        ServerPlayer target = randomEffectsTarget == null ? null : server.getPlayerList().getPlayer(randomEffectsTarget);
+        if (target != null && activeRandomEffect != null) {
+            target.removeEffect(activeRandomEffect.getEffect());
+        }
+        activeRandomEffect = null;
         randomEffectsTarget = null;
         randomEffectsBossBar.removeAllPlayers();
         server.getPlayerList().broadcastSystemMessage(Component.literal("Effets aléatoires arrêtés"), false);
     }
 
     public static void stopAllEvents(MinecraftServer server) {
+        sharedInventory = false;
+        sharedHealth = false;
+        inventorySnapshot = null;
+        sharedHealthValue = 20.0F;
         if (risingLava) {
             setRisingLava(false);
         }

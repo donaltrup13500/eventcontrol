@@ -100,7 +100,7 @@ public class PlayerInventoryMenu extends ChestMenu {
                 return slot - 36;
             }
             if (slot >= 45 && slot <= 48) {
-                return 48 - slot;
+                return 84 - slot;
             }
             return 40;
         }

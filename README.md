@@ -1,4 +1,4 @@
-# Event Master 1.2.8
+# Event Master 1.2.9
 
 Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mod.
 
@@ -38,7 +38,7 @@ Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mo
 1. Installer Java 21 et Gradle 8.8 ou plus recent.
 2. Ouvrir ce dossier dans un terminal.
 3. Executer `gradle build`.
-4. Copier `build/libs/eventcontrol-1.2.8.jar` dans le dossier `mods` du serveur NeoForge 1.21.1.
+4. Copier `build/libs/eventcontrol-1.2.9.jar` dans le dossier `mods` du serveur NeoForge 1.21.1.
 
 Le client se connecte avec Minecraft vanilla compatible avec le serveur ; aucun fichier du mod n'est requis cote client.
 "# eventcontrol" 

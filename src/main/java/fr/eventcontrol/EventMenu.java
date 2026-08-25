@@ -43,7 +43,7 @@ public class EventMenu extends ChestMenu {
             eventContainer.setItem(slot, new ItemStack(slot / 9 == 1
                 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE));
         }
-        eventContainer.setItem(4, EventControl.namedItem(Items.NETHER_STAR, "Event Master v1.2.7"));
+        eventContainer.setItem(4, EventControl.namedItem(Items.NETHER_STAR, "Event Master v1.2.9"));
         eventContainer.setItem(VIEW_INVENTORY_BUTTON,
             EventControl.namedItem(Items.CHEST, "Voir l'inventaire d'un joueur"));
         eventContainer.setItem(INVENTORY_BUTTON,
