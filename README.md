@@ -1,5 +1,7 @@
 # Event Master 1.3.4
 
+[lien du mod](https://www.curseforge.com/minecraft/mc-mods/eventcontron)
+
 Mod NeoForge 1.21.1 cote serveur. Les joueurs n'ont pas besoin d'installer le mod.
 
 ## Fonction actuelle
