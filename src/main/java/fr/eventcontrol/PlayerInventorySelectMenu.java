@@ -14,7 +14,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.List;
 
-public class PlayerInventorySelectMenu extends ChestMenu {
+public class PlayerInventorySelectMenu extends EventActionMenu {
     private final Container menuContainer;
     private final List<ServerPlayer> players;
 
@@ -25,7 +25,7 @@ public class PlayerInventorySelectMenu extends ChestMenu {
 
     private PlayerInventorySelectMenu(int containerId, Inventory inventory, Container container,
                                      List<ServerPlayer> players) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.PLAYER_INVENTORY_SELECT_MENU_TYPE.get(), containerId);
         menuContainer = container;
         this.players = players;
         refreshItems();
@@ -34,9 +34,9 @@ public class PlayerInventorySelectMenu extends ChestMenu {
     private void refreshItems() {
         for (int slot = 0; slot < menuContainer.getContainerSize(); slot++) {
             menuContainer.setItem(slot, EventControl.namedItem(
-                slot / 9 == 1 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
+                slot / 9 == 1 ? Items.BLUE_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
         }
-        menuContainer.setItem(4, EventControl.namedItem(Items.CHEST, "Choisir un inventaire"));
+        menuContainer.setItem(4, EventControl.namedItem(Items.CHEST, "Sélection d’inventaire"));
         for (int index = 0; index < Math.min(players.size(), 7); index++) {
             menuContainer.setItem(10 + index, EventControl.namedItem(
                 Items.PLAYER_HEAD, "Voir : " + players.get(index).getName().getString()));
@@ -46,10 +46,6 @@ public class PlayerInventorySelectMenu extends ChestMenu {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= menuContainer.getContainerSize()) {
-            super.clicked(slotId, button, clickType, player);
-            return;
-        }
         if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }

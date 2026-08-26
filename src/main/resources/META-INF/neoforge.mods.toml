@@ -6,6 +6,7 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="logo.png"
 authorList="Event Control"
 description='''Server-side event controls for shared survival events.'''
 

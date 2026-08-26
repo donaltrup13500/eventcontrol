@@ -12,16 +12,20 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
 
-public class PlayerSizeMenu extends ChestMenu {
+public class PlayerSizeMenu extends EventActionMenu {
     private final Container sizeContainer;
     private final ServerPlayer target;
+
+    public PlayerSizeMenu(int containerId, Inventory inventory) {
+        this(containerId, inventory, null);
+    }
 
     public PlayerSizeMenu(int containerId, Inventory inventory, ServerPlayer target) {
         this(containerId, inventory, new SimpleContainer(27), target);
     }
 
     private PlayerSizeMenu(int containerId, Inventory inventory, Container container, ServerPlayer target) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.PLAYER_SIZE_MENU_TYPE.get(), containerId);
         sizeContainer = container;
         this.target = target;
         refreshItems();
@@ -30,10 +34,11 @@ public class PlayerSizeMenu extends ChestMenu {
     private void refreshItems() {
         for (int slot = 0; slot < sizeContainer.getContainerSize(); slot++) {
             sizeContainer.setItem(slot, EventControl.namedItem(
-                slot / 9 == 1 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
+                slot / 9 == 1 ? Items.MAGENTA_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
         }
+        String targetName = target == null ? "Joueur" : target.getName().getString();
         sizeContainer.setItem(4, EventControl.namedItem(Items.PLAYER_HEAD,
-            target.getName().getString() + " - taille " + String.format("%.2f", EventControl.getPlayerSize(target))));
+            targetName + (target == null ? " • réglage" : " • taille " + String.format("%.2f", EventControl.getPlayerSize(target)))));
         sizeContainer.setItem(11, EventControl.namedItem(Items.RED_DYE, "Réduire"));
         sizeContainer.setItem(13, EventControl.namedItem(Items.WHITE_DYE, "Taille normale"));
         sizeContainer.setItem(15, EventControl.namedItem(Items.GREEN_DYE, "Agrandir"));
@@ -42,10 +47,6 @@ public class PlayerSizeMenu extends ChestMenu {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= sizeContainer.getContainerSize()) {
-            super.clicked(slotId, button, clickType, player);
-            return;
-        }
         if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }

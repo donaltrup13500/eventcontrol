@@ -14,7 +14,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.List;
 
-public class RandomEffectsMenu extends ChestMenu {
+public class RandomEffectsMenu extends EventActionMenu {
     private static final int[] PLAYER_SLOTS = {10, 11, 12, 13, 14, 15, 16};
     private static final int[] TIME_SLOTS = {19, 20, 21};
     private static final int[] TIMES = {10, 30, 60};
@@ -33,7 +33,7 @@ public class RandomEffectsMenu extends ChestMenu {
     }
 
     private RandomEffectsMenu(int containerId, Inventory inventory, Container container, List<ServerPlayer> players) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.RANDOM_EFFECTS_MENU_TYPE.get(), containerId);
         menuContainer = container;
         this.players = players;
         refreshItems();
@@ -42,9 +42,9 @@ public class RandomEffectsMenu extends ChestMenu {
     private void refreshItems() {
         for (int slot = 0; slot < menuContainer.getContainerSize(); slot++) {
             menuContainer.setItem(slot, EventControl.namedItem(
-                slot / 9 == 1 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
+                slot / 9 == 1 ? Items.LIGHT_BLUE_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
         }
-        menuContainer.setItem(4, EventControl.namedItem(Items.POTION, "Effets aléatoires"));
+        menuContainer.setItem(4, EventControl.namedItem(Items.POTION, "Effets aléatoires • ciblage"));
         for (int index = 0; index < Math.min(players.size(), PLAYER_SLOTS.length); index++) {
             ServerPlayer target = players.get(index);
             menuContainer.setItem(PLAYER_SLOTS[index], EventControl.namedItem(
@@ -68,10 +68,6 @@ public class RandomEffectsMenu extends ChestMenu {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= menuContainer.getContainerSize()) {
-            super.clicked(slotId, button, clickType, player);
-            return;
-        }
         if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
@@ -98,14 +94,15 @@ public class RandomEffectsMenu extends ChestMenu {
             return;
         }
         if (slotId == START_SLOT && serverPlayer.getServer() != null) {
-            if (EventControl.isRandomEffects()) {
-                EventControl.stopRandomEffects(serverPlayer.getServer());
-            } else if (selectedPlayer >= 0 && selectedPlayer < players.size()) {
+            if (!EventControl.isRandomEffects() && selectedPlayer >= 0 && selectedPlayer < players.size()) {
                 EventControl.startRandomEffects(serverPlayer.getServer(), players.get(selectedPlayer), selectedSeconds);
             } else {
                 serverPlayer.displayClientMessage(Component.literal("Choisis d'abord un joueur."), true);
                 return;
             }
+            serverPlayer.closeContainer();
+        } else if (slotId == 24 && serverPlayer.getServer() != null) {
+            EventControl.stopRandomEffects(serverPlayer.getServer());
             serverPlayer.closeContainer();
         } else if (slotId == BACK_SLOT) {
             EventControl.openMenuLater(serverPlayer, new EventMenu.Provider());

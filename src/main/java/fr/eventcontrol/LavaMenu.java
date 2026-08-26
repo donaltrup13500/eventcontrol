@@ -13,7 +13,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-public class LavaMenu extends ChestMenu {
+public class LavaMenu extends EventActionMenu {
     private static final int[] PREPARATION_SLOTS = {10, 11, 12, 13, 14, 15};
     private static final int[] PREPARATION_MINUTES = {5, 10, 15, 20, 25, 30};
     private static final int[] SPEED_SLOTS = {19, 20, 21};
@@ -31,7 +31,7 @@ public class LavaMenu extends ChestMenu {
     }
 
     private LavaMenu(int containerId, Inventory inventory, Container container) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.LAVA_MENU_TYPE.get(), containerId);
         lavaContainer = container;
         refreshItems();
     }
@@ -39,10 +39,12 @@ public class LavaMenu extends ChestMenu {
     private void refreshItems() {
         for (int slot = 0; slot < lavaContainer.getContainerSize(); slot++) {
             lavaContainer.setItem(slot, new ItemStack(slot == 1 || slot == 4 || slot == 7
-                ? Items.RED_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE));
+                ? Items.ORANGE_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE));
         }
         lavaContainer.setItem(4, EventControl.namedItem(Items.LAVA_BUCKET,
-            EventControl.isRisingLava() ? "Montée de lave en cours" : "Réglage de la montée de lave"));
+            EventControl.isRisingLava() ? "Montée de lave • active" : "Réglage de la montée de lave"));
+        lavaContainer.setItem(10, EventControl.namedItem(Items.CLOCK, "Préparation"));
+        lavaContainer.setItem(16, EventControl.namedItem(Items.REDSTONE, "Vitesse"));
         for (int index = 0; index < PREPARATION_SLOTS.length; index++) {
             int minutes = PREPARATION_MINUTES[index];
             lavaContainer.setItem(PREPARATION_SLOTS[index], EventControl.namedItem(
@@ -56,17 +58,13 @@ public class LavaMenu extends ChestMenu {
                 "Vitesse x" + speed));
         }
         lavaContainer.setItem(START_SLOT, EventControl.namedItem(Items.FLINT_AND_STEEL,
-            EventControl.isRisingLava() ? "Appliquer la vitesse" : "Démarrer"));
+            EventControl.isRisingLava() ? "Appliquer la vitesse" : "Démarrer l'événement"));
         lavaContainer.setItem(STOP_SLOT, EventControl.namedItem(Items.BARRIER, "Arrêter la montée"));
         lavaContainer.setItem(BACK_SLOT, EventControl.namedItem(Items.ARROW, "Retour au menu"));
     }
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= lavaContainer.getContainerSize()) {
-            super.clicked(slotId, button, clickType, player);
-            return;
-        }
         if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }

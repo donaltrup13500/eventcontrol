@@ -2,139 +2,210 @@ package fr.eventcontrol;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
-public class EventMenu extends ChestMenu {
-    private static final int VIEW_INVENTORY_BUTTON = 10;
-    private static final int INVENTORY_BUTTON = 11;
-    private static final int BORDER_BUTTON = 12;
-    private static final int LAVA_BUTTON = 13;
-    private static final int SIZE_BUTTON = 14;
-    private static final int HEALTH_BUTTON = 15;
-    private static final int DEATH_SWAP_BUTTON = 16;
-    private static final int RANDOM_EFFECTS_BUTTON = 17;
-    private static final int GAME_SPEED_BUTTON = 20;
-    private static final int STOP_ALL_BUTTON = 21;
-    private static final int CLOSE_BUTTON = 22;
-
-    private final Container eventContainer;
+public class EventMenu extends AbstractContainerMenu {
+    private final StatusData status = new StatusData();
 
     public EventMenu(int containerId, Inventory inventory) {
-        this(containerId, inventory, new SimpleContainer(27));
-    }
-
-    private EventMenu(int containerId, Inventory inventory, Container container) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
-        eventContainer = container;
-        refreshItems();
-    }
-
-    private void refreshItems() {
-        for (int slot = 0; slot < eventContainer.getContainerSize(); slot++) {
-            eventContainer.setItem(slot, new ItemStack(slot / 9 == 1
-                ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE));
-        }
-        eventContainer.setItem(4, EventControl.namedItem(Items.NETHER_STAR, "Event Master v1.2.9"));
-        eventContainer.setItem(VIEW_INVENTORY_BUTTON,
-            EventControl.namedItem(Items.CHEST, "Voir l'inventaire d'un joueur"));
-        eventContainer.setItem(INVENTORY_BUTTON,
-            EventControl.statusItem(EventControl.isSharedInventory(), "Inventaire partagé"));
-        eventContainer.setItem(BORDER_BUTTON,
-            EventControl.statusItem(EventControl.isGrowingBorder(), "Bordure évolutive"));
-        eventContainer.setItem(LAVA_BUTTON,
-            EventControl.statusItem(EventControl.isRisingLava(), "Montée de lave"));
-        eventContainer.setItem(SIZE_BUTTON,
-            EventControl.namedItem(Items.PLAYER_HEAD, "Taille des joueurs"));
-        eventContainer.setItem(HEALTH_BUTTON, EventControl.statusItem(
-            EventControl.isSharedHealth(), "♥ Vie partagée"));
-        eventContainer.setItem(DEATH_SWAP_BUTTON,
-            EventControl.statusItem(EventControl.isDeathSwap(), "Death Swap"));
-        eventContainer.setItem(RANDOM_EFFECTS_BUTTON,
-            EventControl.statusItem(EventControl.isRandomEffects(), "Effets aléatoires"));
-        eventContainer.setItem(GAME_SPEED_BUTTON, EventControl.namedItem(
-            Items.SUGAR, "Vitesse du jeu : x" + EventControl.getGameSpeedMultiplier()));
-        eventContainer.setItem(STOP_ALL_BUTTON, EventControl.namedItem(Items.BARRIER, "Arrêter tous les événements"));
-        eventContainer.setItem(CLOSE_BUTTON, EventControl.namedItem(Items.BARRIER, "Fermer"));
+        super(EventControl.EVENT_MENU_TYPE.get(), containerId);
+        status.refresh();
+        addDataSlots(status);
     }
 
     @Override
-    public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId >= 0 && slotId < eventContainer.getContainerSize()) {
-            if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer)) {
-                return;
+    public ItemStack quickMoveStack(Player player, int slot) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return player.isAlive();
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        switch (id) {
+            case 101 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new PlayerInventorySelectMenu.Provider());
+                }
+                return true;
             }
-            switch (slotId) {
-                case VIEW_INVENTORY_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new PlayerInventorySelectMenu.Provider());
-                    }
-                    return;
+            case 102 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer,
+                        new ToggleSettingsMenu.Provider(ToggleSettingsMenu.INVENTORY));
                 }
-                case INVENTORY_BUTTON -> EventControl.setSharedInventory(!EventControl.isSharedInventory());
-                case BORDER_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
-                        if (EventControl.isGrowingBorder()) {
-                            EventControl.stopGrowingBorder(serverPlayer.getServer());
-                        } else {
-                            EventControl.startGrowingBorder(serverPlayer.getServer(), serverPlayer);
-                        }
-                    }
-                }
-                case LAVA_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new LavaMenu.Provider());
-                    }
-                    return;
-                }
-                case SIZE_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new PlayerSelectMenu.Provider());
-                    }
-                    return;
-                }
-                case HEALTH_BUTTON -> EventControl.setSharedHealth(!EventControl.isSharedHealth());
-                case DEATH_SWAP_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new DeathSwapMenu.Provider());
-                    }
-                    return;
-                }
-                case RANDOM_EFFECTS_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new RandomEffectsMenu.Provider());
-                    }
-                    return;
-                }
-                case GAME_SPEED_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        EventControl.openMenuLater(serverPlayer, new GameSpeedMenu.Provider());
-                    }
-                    return;
-                }
-                case STOP_ALL_BUTTON -> {
-                    if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
-                        EventControl.stopAllEvents(serverPlayer.getServer());
-                    }
-                }
-                case CLOSE_BUTTON -> player.closeContainer();
-                default -> {
-                    return;
-                }
+                return true;
             }
-            refreshItems();
-            broadcastChanges();
-            return;
+            case 115 -> {
+                return true;
+            }
+            case 103 -> {
+                if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
+                    EventControl.openMenuLater(serverPlayer,
+                        new ToggleSettingsMenu.Provider(ToggleSettingsMenu.BORDER));
+                }
+                return true;
+            }
+            case 116 -> {
+                return true;
+            }
+            case 104 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new LavaMenu.Provider());
+                }
+                return true;
+            }
+            case 105 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new PlayerSelectMenu.Provider());
+                }
+                return true;
+            }
+            case 106 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer,
+                        new ToggleSettingsMenu.Provider(ToggleSettingsMenu.HEALTH));
+                }
+                return true;
+            }
+            case 117 -> {
+                return true;
+            }
+            case 107 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new DeathSwapMenu.Provider());
+                }
+                return true;
+            }
+            case 108 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new RandomEffectsMenu.Provider());
+                }
+                return true;
+            }
+            case 109 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new GameSpeedMenu.Provider());
+                }
+                return true;
+            }
+            case 110 -> {
+                if (player instanceof ServerPlayer serverPlayer && serverPlayer.getServer() != null) {
+                    EventControl.stopAllEvents(serverPlayer.getServer());
+                }
+                status.refresh();
+                broadcastChanges();
+                return true;
+            }
+            case 111 -> {
+                player.closeContainer();
+                return true;
+            }
+            case 112 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new VirusMenu.Provider());
+                }
+                return true;
+            }
+            case 113 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer, new JumpDeathMenu.Provider());
+                }
+                return true;
+            }
+            case 114 -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    EventControl.openMenuLater(serverPlayer,
+                        new ToggleSettingsMenu.Provider(ToggleSettingsMenu.SUN));
+                }
+                return true;
+            }
+            case 118 -> {
+                return true;
+            }
+            case 119 -> {
+                return true;
+            }
+            case 120 -> {
+                return true;
+            }
+            case 121 -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
         }
-        super.clicked(slotId, button, clickType, player);
+    }
+
+    public boolean isLavaActive() {
+        return status.get(0) != 0;
+    }
+
+    public boolean isSharedHealthActive() {
+        return status.get(1) != 0;
+    }
+
+    public boolean isSharedInventoryActive() {
+        return status.get(2) != 0;
+    }
+
+    public boolean isBorderActive() {
+        return status.get(3) != 0;
+    }
+
+    public int displayedSpeed() {
+        return status.get(4);
+    }
+
+    public boolean isVirusActive() {
+        return status.get(5) != 0;
+    }
+
+    public boolean isJumpDeathActive() {
+        return status.get(6) != 0;
+    }
+
+    public boolean isSunBurnActive() {
+        return status.get(7) != 0;
+    }
+
+    private static class StatusData implements ContainerData {
+        private final int[] values = new int[8];
+
+        void refresh() {
+            values[0] = EventControl.isRisingLava() ? 1 : 0;
+            values[1] = EventControl.isSharedHealth() ? 1 : 0;
+            values[2] = EventControl.isSharedInventory() ? 1 : 0;
+            values[3] = EventControl.isGrowingBorder() ? 1 : 0;
+            values[4] = EventControl.getGameSpeedMultiplier();
+            values[5] = VirusEvent.isActive() ? 1 : 0;
+            values[6] = JumpDeathEvent.isActive() ? 1 : 0;
+            values[7] = SunBurnEvent.isActive() ? 1 : 0;
+        }
+
+        @Override
+        public int get(int index) {
+            return values[index];
+        }
+
+        @Override
+        public void set(int index, int value) {
+            values[index] = value;
+        }
+
+        @Override
+        public int getCount() {
+            return 8;
+        }
     }
 
     public static class Provider implements MenuProvider {

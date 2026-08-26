@@ -12,10 +12,15 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
 
-public class ConfirmMenu extends ChestMenu {
+public class ConfirmMenu extends EventActionMenu {
     private final Container confirmContainer;
     private final Runnable action;
     private final MenuProvider cancelProvider;
+
+    public ConfirmMenu(int containerId, Inventory inventory) {
+        this(containerId, inventory, "Confirmation", "Confirmer", () -> { },
+            new EventMenu.Provider());
+    }
 
     public ConfirmMenu(int containerId, Inventory inventory, String title, String message,
                        Runnable action, MenuProvider cancelProvider) {
@@ -24,23 +29,22 @@ public class ConfirmMenu extends ChestMenu {
 
     private ConfirmMenu(int containerId, Inventory inventory, Container container, String title, String message,
                         Runnable action, MenuProvider cancelProvider) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.CONFIRM_MENU_TYPE.get(), containerId);
         confirmContainer = container;
         this.action = action;
         this.cancelProvider = cancelProvider;
         for (int slot = 0; slot < 27; slot++) {
             confirmContainer.setItem(slot, EventControl.namedItem(
-                slot / 9 == 1 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
+                slot / 9 == 1 ? Items.ORANGE_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
         }
-        confirmContainer.setItem(4, EventControl.namedItem(Items.NETHER_STAR, title));
+        confirmContainer.setItem(4, EventControl.namedItem(Items.NETHER_STAR, "Confirmation • " + title));
         confirmContainer.setItem(11, EventControl.namedItem(Items.LIME_DYE, "Confirmer : " + message));
-        confirmContainer.setItem(15, EventControl.namedItem(Items.RED_DYE, "Annuler"));
+        confirmContainer.setItem(15, EventControl.namedItem(Items.RED_DYE, "Annuler / retour"));
     }
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= confirmContainer.getContainerSize()
-            || clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
+        if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
         if (slotId == 11) {

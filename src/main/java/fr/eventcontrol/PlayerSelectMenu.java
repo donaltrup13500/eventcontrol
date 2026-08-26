@@ -15,7 +15,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.List;
 
-public class PlayerSelectMenu extends ChestMenu {
+public class PlayerSelectMenu extends EventActionMenu {
     private final Container playerContainer;
     private final List<ServerPlayer> players;
 
@@ -25,7 +25,7 @@ public class PlayerSelectMenu extends ChestMenu {
     }
 
     private PlayerSelectMenu(int containerId, Inventory inventory, Container container, List<ServerPlayer> players) {
-        super(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
+        super(EventControl.PLAYER_SELECT_MENU_TYPE.get(), containerId);
         playerContainer = container;
         this.players = players;
         refreshItems();
@@ -34,7 +34,7 @@ public class PlayerSelectMenu extends ChestMenu {
     private void refreshItems() {
         for (int slot = 0; slot < playerContainer.getContainerSize(); slot++) {
             playerContainer.setItem(slot, EventControl.namedItem(
-                slot / 9 == 1 ? Items.GRAY_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
+                slot / 9 == 1 ? Items.GREEN_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE, " "));
         }
         playerContainer.setItem(4, EventControl.namedItem(Items.PLAYER_HEAD, "Choisir un joueur"));
         for (int index = 0; index < Math.min(players.size(), 7); index++) {
@@ -48,10 +48,6 @@ public class PlayerSelectMenu extends ChestMenu {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId < 0 || slotId >= playerContainer.getContainerSize()) {
-            super.clicked(slotId, button, clickType, player);
-            return;
-        }
         if (clickType != ClickType.PICKUP || button != 0 || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
